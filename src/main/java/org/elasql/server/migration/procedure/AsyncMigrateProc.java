@@ -127,7 +127,7 @@ public class AsyncMigrateProc extends CalvinStoredProcedure<AsyncMigrateParamHel
 		
 		// Receive the data from the source node and save them
 		for (RecordKey key : paramHelper.getPushingKeys()) {
-			//System.out.println("++++++++++Receieve "+key);
+			
 			CachedRecord rec = cacheMgr.readFromRemote(key);
 
 			// Flush them to the local storage engine

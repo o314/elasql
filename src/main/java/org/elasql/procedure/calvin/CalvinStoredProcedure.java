@@ -23,8 +23,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 import org.elasql.cache.CachedRecord;
 import org.elasql.cache.calvin.CalvinCacheMgr;
@@ -228,9 +226,7 @@ public abstract class CalvinStoredProcedure<H extends StoredProcedureParamHelper
 
 			// Deal with pull keys whether lunch pulling
 			if (!pullKeys.isEmpty()) {
-				// !Prevent ReadOnly but touch migration rage case
-				// if(!localWriteKeys.isEmpty()&&)
-				// activeParticipants.add(migraMgr.getSourcePartition());
+
 				// Set all not migrated key to migrated
 				migraMgr.setRecordMigrated(pullKeys);
 				// Set pulling flag
@@ -263,6 +259,7 @@ public abstract class CalvinStoredProcedure<H extends StoredProcedureParamHelper
 		// Decide the role
 		if (activeParticipants.contains(localNodeId))
 			isActiveParticipant = true;
+		// !Prevent ReadOnly but touch migration rage case
 		else if (!localReadKeys.isEmpty() || (!pullKeys.isEmpty() && isSourceNode))
 			isPassiveParticipant = true;
 
@@ -280,70 +277,6 @@ public abstract class CalvinStoredProcedure<H extends StoredProcedureParamHelper
 		CalvinPostOffice postOffice = (CalvinPostOffice) Elasql.remoteRecReceiver();
 		cacheMgr = postOffice.createCacheMgr(tx, true);
 
-		/*
-		 * if (isParticipated()) { cacheMgr = postOffice.createCacheMgr(tx,
-		 * true); // create a cache manager /* if (remoteReadKeys.isEmpty()&&
-		 * !(paramHelper instanceof AsyncMigrateParamHelper)) cacheMgr =
-		 * postOffice.createCacheMgr(tx, false ); else cacheMgr =
-		 * postOffice.createCacheMgr(tx, true);
-		 */
-		/*
-		 * } else { postOffice.skipTransaction(txNum);
-		 */
-
-		if (islog && isInMigrating) {
-			String str = "******\nisInMigrating : " + isInMigrating;
-			str = str + "\n Txnum : " + txNum;
-			str = str + "\n isMigrationTx : " + isMigrationTx;
-			Class<?> enclosingClass = getClass().getEnclosingClass();
-			if (enclosingClass != null) {
-				str = str + "\n Classname : " + enclosingClass.getName();
-
-			} else {
-				str = str + "\n Classname : " + getClass().getName();
-
-			}
-			str = str + "\n readKeysInMigration : ";
-			for (Integer k : recordKeyToSortArray(readKeysInMigration))
-				str = str + " , " + k;
-			str = str + "\n writeKeysInMigration : ";
-			for (Integer k : recordKeyToSortArray(writeKeysInMigration))
-				str = str + " , " + k;
-			str = str + "\n Local Read : ";
-			for (Integer k : recordKeyToSortArray(localReadKeys))
-				str = str + " , " + k;
-			str = str + "\n Local Write : ";
-			for (Integer k : recordKeyToSortArray(localWriteKeys))
-				str = str + " , " + k;
-			str = str + "\n Remote Read : ";
-			for (Integer k : recordKeyToSortArray(remoteReadKeys))
-				str = str + " , " + k;
-			str = str + "\n activeParticipants : " + activeParticipants;
-			str = str + "\n isParticipated : " + isParticipated();
-			str = str + "\n ReadNodes : ";
-			for (int k : readsPerNodes)
-				str = str + " , " + k;
-			str = str + "\n pullKeys : ";
-			for (Integer k : recordKeyToSortArray(pullKeys))
-				str = str + " , " + k;
-			str = str + "\n activePulling : " + activePulling;
-			str = str + "\n ******";
-			System.out.println(str);
-
-		}
-		/*
-		 * if (!this.isSourceNode && islog) { String str = "********" +
-		 * System.currentTimeMillis() + "\n Txnum : " + txNum; str = str +
-		 * "\n isMigrationTx : " + isMigrationTx; str = str + "\n Local Read : "
-		 * ; for (Integer k : recordKeyToSortArray(localReadKeys)) str = str +
-		 * " , " + k; str = str + "\n Local Write : "; for (Integer k :
-		 * recordKeyToSortArray(localWriteKeys)) str = str + " , " + k; str =
-		 * str + "\n Remote Read : "; for (Integer k :
-		 * recordKeyToSortArray(remoteReadKeys)) str = str + " , " + k; str =
-		 * str + "\n activeParticipants : " + activeParticipants; str = str +
-		 * "\n********"; System.out.println(str); }
-		 */
-
 	}
 
 	public void bookConservativeLocks() {
@@ -357,7 +290,7 @@ public abstract class CalvinStoredProcedure<H extends StoredProcedureParamHelper
 	private void getConservativeLocks() {
 		ConservativeOrderedCcMgr ccMgr = (ConservativeOrderedCcMgr) tx.concurrencyMgr();
 
-		ccMgr.requestLocks(isInMigrating && islog);
+		ccMgr.requestLocks();
 	}
 
 	@Override
@@ -365,8 +298,6 @@ public abstract class CalvinStoredProcedure<H extends StoredProcedureParamHelper
 		try {
 			// Get conservative locks it has asked before
 			getConservativeLocks();
-			if (islog)
-				System.out.println("Tx : " + txNum + " End of get lock!");
 			// Execute transaction
 			executeTransactionLogic();
 
@@ -379,27 +310,8 @@ public abstract class CalvinStoredProcedure<H extends StoredProcedureParamHelper
 
 			// Something might be done after committing
 			afterCommit();
-			if (islog)
-				System.out.println("Tx : " + txNum + " Commited!");
 
 		} catch (Exception e) {
-			StringWriter errors = new StringWriter();
-			e.printStackTrace(new PrintWriter(errors));
-			String str = "TX : " + txNum + "Abort cause Exception!\n";
-			if (readings != null) {
-				str = str + "\n Readings : ";
-				for (Integer k : recordKeyToSortArray(readings.keySet()))
-					str = str + " , " + k;
-				str = str + "\n Error check : \n";
-				for (Entry<RecordKey, CachedRecord> pair : readings.entrySet()) {
-					if (pair.getValue() == null)
-						str = str + "key" + pair.getKey() + "is null!\n";
-					else if (pair.getValue().getVal("i_name") == null)
-						str = str + "key" + pair.getKey() + "no map!\n";
-
-				}
-			}
-			System.out.println(str + errors.toString());
 
 			// e.printStackTrace();
 			tx.rollback();
@@ -485,15 +397,6 @@ public abstract class CalvinStoredProcedure<H extends StoredProcedureParamHelper
 		// Read the remote records
 		collectRemoteReadings(readings);
 
-		if (islog && (this.isSourceNode || this.isDestNode)) {
-			String str = "********\n Txnum : " + txNum;
-			str = str + "\n Final Readings : ";
-			for (Integer k : recordKeyToSortArray(readings.keySet()))
-				str = str + " , " + k;
-			str = str + "\n********";
-			System.out.println(str);
-		}
-
 		// Write the local records
 		executeSql(readings);
 	}
@@ -506,28 +409,6 @@ public abstract class CalvinStoredProcedure<H extends StoredProcedureParamHelper
 			return;
 		}
 		int nodeId = Elasql.partitionMetaMgr().getPartition(readKey);
-
-		// Check which node has the corresponding record
-		// Normal
-		// if (!isInMigrating || !migraMgr.keyIsInMigrationRange(readKey)) {
-		//
-		// if (nodeId == localNodeId)
-		// localReadKeys.add(readKey);
-		// else
-		// remoteReadKeys.add(readKey);
-		// } else { // Migrating
-		//
-		// // Check the migration status
-		// if (!migraMgr.isRecordMigrated(readKey)) {
-		// pullKeys.add(readKey);
-		// } else
-		// isExecutingInSrc = false;
-		//
-		// readKeysInMigration.add(readKey);
-		// // Other nodes
-		// if (!isSourceNode && !isDestNode)
-		// remoteReadKeys.add(readKey);
-		// }
 
 		// All New design
 		// Calvin part
@@ -557,21 +438,6 @@ public abstract class CalvinStoredProcedure<H extends StoredProcedureParamHelper
 		// Check which node has the corresponding record
 		int nodeId = Elasql.partitionMetaMgr().getPartition(writeKey);
 
-		// // Normal
-		// if (!isInMigrating || !migraMgr.keyIsInMigrationRange(writeKey)) {
-		// if (nodeId == localNodeId)
-		// localWriteKeys.add(writeKey);
-		// activeParticipants.add(nodeId);
-		// } else { // Migrating
-		// // Check the migration status
-		// if (!migraMgr.isRecordMigrated(writeKey)) {
-		// pullKeys.add(writeKey);
-		// } else {
-		// isExecutingInSrc = false;
-		// }
-		//
-		// writeKeysInMigration.add(writeKey);
-		// }
 		// All New design
 		// Calvin part
 		if (nodeId == localNodeId)
@@ -743,44 +609,6 @@ public abstract class CalvinStoredProcedure<H extends StoredProcedureParamHelper
 			l.add((int) k.getKeyVal("i_id").asJavaVal());
 		Collections.sort(l);
 		return l;
-	}
-
-	public static void main(String[] a) {
-
-		Set<RecordKey> set = new HashSet<RecordKey>();
-		HashMap<String, Constant> tmp = new HashMap<String, Constant>();
-		tmp.put("i_id", new IntegerConstant(1));
-		RecordKey tmpK = new RecordKey("item", tmp);
-		set.add(tmpK);
-		tmp = new HashMap<String, Constant>();
-		tmp.put("i_id", new IntegerConstant(2));
-		tmpK = new RecordKey("item", tmp);
-		set.add(tmpK);
-		tmp = new HashMap<String, Constant>();
-		tmp.put("i_id", new IntegerConstant(3));
-		tmpK = new RecordKey("item", tmp);
-		set.add(tmpK);
-		tmp = new HashMap<String, Constant>();
-		tmp.put("i_id", new IntegerConstant(4));
-		tmpK = new RecordKey("item", tmp);
-		set.add(tmpK);
-
-		Set<RecordKey> set2 = new HashSet<RecordKey>();
-		tmp = new HashMap<String, Constant>();
-		tmp.put("i_id", new IntegerConstant(3));
-		tmpK = new RecordKey("item", tmp);
-		set2.add(tmpK);
-		tmp = new HashMap<String, Constant>();
-		tmp.put("i_id", new IntegerConstant(4));
-		tmpK = new RecordKey("item", tmp);
-		set2.add(tmpK);
-		tmp = new HashMap<String, Constant>();
-		tmp.put("i_id", new IntegerConstant(5));
-		tmpK = new RecordKey("item", tmp);
-		set2.add(tmpK);
-
-		set.removeAll(set2);
-		System.out.println(set);
 	}
 
 }

@@ -169,16 +169,14 @@ public class ConservativeOrderedLockTable {
 			}
 
 			try {
-				// long timestamp = System.currentTimeMillis();
+
 				Long head = lockers.requestQueue.peek();
-				while ((!xLockable(lockers, txNum) || (head != null && head.longValue() != txNum))
-				/* && !waitingTooLong(timestamp) */) {
+				while ((!xLockable(lockers, txNum) || (head != null && head.longValue() != txNum))) {
 					anchor.wait();
 					lockers = prepareLockers(obj);
 					head = lockers.requestQueue.peek();
 				}
-				// if (!xLockable(lockers, txNum))
-				// throw new LockAbortException();
+
 				// get the x lock
 				lockers.requestQueue.poll();
 				lockers.xLocker = txNum;

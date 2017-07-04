@@ -85,7 +85,6 @@ public class CalvinCacheMgr {
 		rec = VanillaCoreCrud.read(key, tx);
 		if (rec != null) {
 			rec.setSrcTxNum(tx.getTransactionNumber());
-			rec.setLocal(true);
 			cachedRecords.put(key, rec);
 		}
 
@@ -94,7 +93,7 @@ public class CalvinCacheMgr {
 
 	public CachedRecord readFromRemote(RecordKey key) {
 		CachedRecord rec = cachedRecords.get(key);
-		if (rec != null )
+		if (rec != null)
 			return rec;
 
 		if (inbox == null)
@@ -115,7 +114,6 @@ public class CalvinCacheMgr {
 
 		return rec;
 	}
-
 
 	public void update(RecordKey key, CachedRecord rec) {
 		rec.setSrcTxNum(tx.getTransactionNumber());
@@ -151,12 +149,6 @@ public class CalvinCacheMgr {
 	}
 
 	void receiveRemoteRecord(RecordKey key, CachedRecord rec) {
-		if (inbox == null)
-			System.out.println("receiveRemoteRecord : Inbox is null");
-		if (rec == null)
-			System.out.println("receiveRemoteRecord : Rec is null");
-		if (rec == null)
-			System.out.println("receiveRemoteRecord : key is null");
 		inbox.add(new KeyRecordPair(key, rec));
 	}
 

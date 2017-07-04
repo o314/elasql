@@ -39,7 +39,7 @@ import org.vanilladb.core.server.VanillaDb;
 import org.vanilladb.core.server.task.Task;
 
 public class ConnectionMgr
-		implements ServerTotalOrderedMessageListener, ServerP2pMessageListener, ServerNodeFailListener{
+		implements ServerTotalOrderedMessageListener, ServerP2pMessageListener, ServerNodeFailListener {
 	private static Logger logger = Logger.getLogger(ConnectionMgr.class.getName());
 
 	public static final int SEQ_NODE_ID = PartitionMetaMgr.NUM_PARTITIONS;
@@ -92,7 +92,7 @@ public class ConnectionMgr
 				@Override
 				public void run() {
 					try {
-						Thread.sleep( 30 * 1000);
+						Thread.sleep(30 * 1000);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -123,7 +123,7 @@ public class ConnectionMgr
 
 	public void pushTupleSet(int nodeId, TupleSet reading) {
 		P2pMessage p2pmsg = new P2pMessage(reading, nodeId, ChannelType.SERVER);
-		if(reading.sinkId()==-2)
+		if (reading.sinkId() == -2)
 			p2pmsg.isAsunc = true;
 		serverAppl.sendP2pMessage(p2pmsg);
 	}
@@ -149,21 +149,12 @@ public class ConnectionMgr
 				Elasql.migrationMgr().onReceiveStopMigrateReq(ts.getMetadata());
 				break;
 			}
-			if(ts.sinkId() == -2)
-				System.out.println("Receieve Async push data at ConnectMgr");
-			
+
 			if (sequencerMode)
 				return;
-			for (Tuple t : ts.getTupleSet()) {
-				if(t.rec == null){
-					String str = "Receiver : "+p2pmsg.getReceiver()+" SinkID :"+ts.sinkId() + " Size :"+ts.getTupleSet().size();
-					str = str+t;
-					
-					System.out.println(str);
-				}
+			for (Tuple t : ts.getTupleSet())
 				Elasql.remoteRecReceiver().cacheRemoteRecord(t);
 
-			}
 		} else
 			throw new IllegalArgumentException();
 	}
@@ -184,9 +175,9 @@ public class ConnectionMgr
 	public void onNodeFail(int id, ChannelType ct) {
 		// do nothing
 	}
-	
+
 	@Override
-	public String mkClientResponse(Object o){
+	public String mkClientResponse(Object o) {
 		return ((ClientResponse) o).toString();
 	}
 }
