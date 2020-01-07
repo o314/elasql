@@ -15,10 +15,10 @@
  *******************************************************************************/
 package org.elasql.cache.naive;
 
-import org.elasql.cache.CachedRecord;
 import org.elasql.cache.RemoteRecordReceiver;
 import org.elasql.cache.VanillaCoreCrud;
 import org.elasql.remote.groupcomm.Tuple;
+import org.elasql.sql.CachedRecord;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.core.storage.tx.Transaction;
 

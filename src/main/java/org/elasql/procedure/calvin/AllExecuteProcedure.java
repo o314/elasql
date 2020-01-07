@@ -16,15 +16,14 @@
 package org.elasql.procedure.calvin;
 
 import java.sql.Connection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.elasql.cache.CachedRecord;
 import org.elasql.cache.calvin.CalvinPostOffice;
 import org.elasql.remote.groupcomm.TupleSet;
 import org.elasql.server.Elasql;
+import org.elasql.sql.CachedRecord;
+import org.elasql.sql.CachedRecordBuilder;
 import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.NotificationPartMetaMgr;
 import org.elasql.storage.metadata.PartitionMetaMgr;
@@ -116,17 +115,15 @@ public abstract class AllExecuteProcedure<H extends StoredProcedureParamHelper>
 	}
 
 	private void sendNotification() {
-		// Create a key value set
-		Map<String, Constant> fldVals = new HashMap<String, Constant>();
-		fldVals.put(KEY_FINISH, new IntegerConstant(1));
-		
 		RecordKey notKey = NotificationPartMetaMgr.createRecordKey(Elasql.serverId(), MASTER_NODE);
-		CachedRecord notVal = NotificationPartMetaMgr.createRecord(Elasql.serverId(), MASTER_NODE,
-				txNum, fldVals);
+		CachedRecordBuilder builder = new CachedRecordBuilder(notKey, true, true);
+		builder.addFldVal(KEY_FINISH, new IntegerConstant(1));
+		CachedRecord notRec = builder.build();
+		notRec.setSrcTxNum(txNum);
 
 		TupleSet ts = new TupleSet(-1);
 		// Use node id as source tx number
-		ts.addTuple(notKey, txNum, txNum, notVal);
+		ts.addTuple(notKey, txNum, txNum, notRec);
 		Elasql.connectionMgr().pushTupleSet(0, ts);
 
 		if (logger.isLoggable(Level.FINE))

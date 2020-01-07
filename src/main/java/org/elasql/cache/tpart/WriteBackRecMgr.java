@@ -22,8 +22,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.elasql.cache.CachedRecord;
 import org.elasql.cache.VanillaCoreCrud;
+import org.elasql.sql.CachedRecord;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.core.storage.tx.Transaction;
 

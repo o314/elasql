@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.elasql.cache.CachedRecord;
 import org.elasql.cache.tpart.CachedEntryKey;
 import org.elasql.cache.tpart.TPartCacheMgr;
 import org.elasql.cache.tpart.TPartTxLocalCache;
@@ -33,6 +32,7 @@ import org.elasql.remote.groupcomm.TupleSet;
 import org.elasql.schedule.tpart.sink.PushInfo;
 import org.elasql.schedule.tpart.sink.SunkPlan;
 import org.elasql.server.Elasql;
+import org.elasql.sql.CachedRecord;
 import org.elasql.sql.RecordKey;
 import org.elasql.storage.tx.recovery.DdRecoveryMgr;
 import org.vanilladb.core.remote.storedprocedure.SpResultSet;

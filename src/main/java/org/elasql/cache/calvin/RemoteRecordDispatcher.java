@@ -22,8 +22,8 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.elasql.cache.CachedRecord;
 import org.elasql.server.Elasql;
+import org.elasql.sql.CachedRecord;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.core.server.task.Task;
 

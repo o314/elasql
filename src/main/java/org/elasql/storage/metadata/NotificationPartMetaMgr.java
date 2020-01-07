@@ -15,12 +15,8 @@
  *******************************************************************************/
 package org.elasql.storage.metadata;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.elasql.cache.CachedRecord;
 import org.elasql.sql.RecordKey;
-import org.vanilladb.core.sql.Constant;
+import org.elasql.sql.RecordKeyBuilder;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class NotificationPartMetaMgr extends PartitionMetaMgr {
@@ -30,23 +26,10 @@ public class NotificationPartMetaMgr extends PartitionMetaMgr {
 	public static final String KEY_DEST_NAME = "dest_server_id";
 	
 	public static RecordKey createRecordKey(int srcNodeId, int destNodeId) {
-		Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put(KEY_SOURCE_NAME, new IntegerConstant(srcNodeId));
-		keyEntryMap.put(KEY_DEST_NAME, new IntegerConstant(destNodeId));
-		return new RecordKey(TABLE_NAME, keyEntryMap);
-	}
-	
-	public static CachedRecord createRecord(int srcNodeId, int destNodeId,
-			long txNum, Map<String, Constant> fldVals) {
-		// Create key value sets
-		Map<String, Constant> newFldVals = new HashMap<String, Constant>(fldVals);
-		newFldVals.put(KEY_SOURCE_NAME, new IntegerConstant(srcNodeId));
-		newFldVals.put(KEY_DEST_NAME, new IntegerConstant(destNodeId));
-
-		// Create a record
-		CachedRecord rec = new CachedRecord(newFldVals);
-		rec.setSrcTxNum(txNum);
-		return rec;
+		RecordKeyBuilder builder = new RecordKeyBuilder(TABLE_NAME);
+		builder.addFldVal(KEY_SOURCE_NAME, new IntegerConstant(srcNodeId));
+		builder.addFldVal(KEY_DEST_NAME, new IntegerConstant(destNodeId));
+		return builder.build();
 	}
 	
 	private PartitionMetaMgr underliedPartMetaMgr;

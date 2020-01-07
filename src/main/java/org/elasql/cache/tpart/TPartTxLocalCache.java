@@ -19,9 +19,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.elasql.cache.CachedRecord;
 import org.elasql.schedule.tpart.sink.SunkPlan;
 import org.elasql.server.Elasql;
+import org.elasql.sql.CachedRecord;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.storage.tx.Transaction;
@@ -87,16 +87,14 @@ public class TPartTxLocalCache {
 	}
 
 	public void insert(RecordKey key, Map<String, Constant> fldVals) {
-		CachedRecord rec = new CachedRecord(fldVals);
+		CachedRecord rec = CachedRecord.newRecordForInsertion(key, fldVals);
 		rec.setSrcTxNum(txNum);
-		rec.setNewInserted(true);
 		recordCache.put(key, rec);
 	}
 
 	public void delete(RecordKey key) {
-		CachedRecord dummyRec = new CachedRecord();
+		CachedRecord dummyRec = CachedRecord.newRecordForDeletion(key);
 		dummyRec.setSrcTxNum(txNum);
-		dummyRec.delete();
 		recordCache.put(key, dummyRec);
 	}
 

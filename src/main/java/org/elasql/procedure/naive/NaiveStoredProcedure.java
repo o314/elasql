@@ -20,10 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.elasql.cache.CachedRecord;
 import org.elasql.cache.naive.NaiveCacheMgr;
 import org.elasql.procedure.DdStoredProcedure;
 import org.elasql.server.Elasql;
+import org.elasql.sql.CachedRecord;
 import org.elasql.sql.RecordKey;
 import org.elasql.storage.tx.concurrency.ConservativeOrderedCcMgr;
 import org.elasql.storage.tx.recovery.DdRecoveryMgr;

@@ -17,7 +17,7 @@ package org.elasql.remote.groupcomm;
 
 import java.io.Serializable;
 
-import org.elasql.cache.CachedRecord;
+import org.elasql.sql.CachedRecord;
 import org.elasql.sql.RecordKey;
 
 public class Tuple implements Serializable {

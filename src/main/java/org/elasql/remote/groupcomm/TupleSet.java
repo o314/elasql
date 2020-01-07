@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.elasql.cache.CachedRecord;
+import org.elasql.sql.CachedRecord;
 import org.elasql.sql.RecordKey;
 
 public class TupleSet implements Serializable {

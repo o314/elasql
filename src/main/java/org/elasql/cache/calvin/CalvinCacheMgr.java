@@ -20,9 +20,9 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.elasql.cache.CachedRecord;
 import org.elasql.cache.VanillaCoreCrud;
 import org.elasql.server.Elasql;
+import org.elasql.sql.CachedRecord;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.storage.tx.Transaction;
@@ -119,16 +119,14 @@ public class CalvinCacheMgr {
 	}
 
 	public void insert(RecordKey key, Map<String, Constant> fldVals) {
-		CachedRecord rec = new CachedRecord(fldVals);
+		CachedRecord rec = CachedRecord.newRecordForInsertion(key, fldVals);
 		rec.setSrcTxNum(tx.getTransactionNumber());
-		rec.setNewInserted(true);
 		cachedRecords.put(key, rec);
 	}
 
 	public void delete(RecordKey key) {
-		CachedRecord dummyRec = new CachedRecord();
+		CachedRecord dummyRec = CachedRecord.newRecordForDeletion(key);
 		dummyRec.setSrcTxNum(tx.getTransactionNumber());
-		dummyRec.delete();
 		cachedRecords.put(key, dummyRec);
 	}
 	
