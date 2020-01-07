@@ -18,13 +18,13 @@ package org.elasql.procedure;
 import org.vanilladb.core.server.task.Task;
 
 public abstract class StoredProcedureTask extends Task {
-	protected DdStoredProcedure sp;
+	protected DdStoredProcedure<?> sp;
 	protected int clientId;
 	protected int connectionId;
 	protected long txNum;
 
 	public StoredProcedureTask(int cid, int connId, long txNum,
-			DdStoredProcedure sp) {
+			DdStoredProcedure<?> sp) {
 		this.txNum = txNum;
 		this.clientId = cid;
 		this.connectionId = connId;

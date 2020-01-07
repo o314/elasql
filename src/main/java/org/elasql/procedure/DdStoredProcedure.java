@@ -16,9 +16,14 @@
 package org.elasql.procedure;
 
 import org.vanilladb.core.sql.storedprocedure.StoredProcedure;
+import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 
-public interface DdStoredProcedure extends StoredProcedure {
+public abstract class DdStoredProcedure<H extends StoredProcedureParamHelper> extends StoredProcedure<H> {
 
-	boolean isReadOnly();
+	public DdStoredProcedure(H helper) {
+		super(helper);
+	}
+
+	public abstract boolean isReadOnly();
 
 }

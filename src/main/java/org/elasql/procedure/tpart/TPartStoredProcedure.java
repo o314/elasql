@@ -40,7 +40,8 @@ import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 import org.vanilladb.core.storage.tx.Transaction;
 
-public abstract class TPartStoredProcedure<H extends StoredProcedureParamHelper> implements DdStoredProcedure {
+public abstract class TPartStoredProcedure<H extends StoredProcedureParamHelper>
+		extends DdStoredProcedure<H> {
 
 	public static enum ProcedureType {
 		NOP, NORMAL, UTILITY
@@ -60,9 +61,7 @@ public abstract class TPartStoredProcedure<H extends StoredProcedureParamHelper>
 	private List<CachedEntryKey> cachedEntrySet = new ArrayList<CachedEntryKey>();
 
 	public TPartStoredProcedure(long txNum, H paramHelper) {
-		if (paramHelper == null)
-			throw new NullPointerException("paramHelper should not be null");
-
+		super(paramHelper);
 		this.txNum = txNum;
 		this.paramHelper = paramHelper;
 		this.localNodeId = Elasql.serverId();
@@ -93,18 +92,24 @@ public abstract class TPartStoredProcedure<H extends StoredProcedureParamHelper>
 
 	@Override
 	public SpResultSet execute() {
+		boolean isCommitted = false;
+		
 		try {
 			// Execute transaction
 			executeTransactionLogic();
 
 			tx.commit();
-			paramHelper.setCommitted(true);
+			isCommitted = true;
 		} catch (Exception e) {
 			e.printStackTrace();
 			tx.rollback();
-			paramHelper.setCommitted(false);
 		}
-		return paramHelper.createResultSet();
+		
+		return new SpResultSet(
+			isCommitted,
+			paramHelper.getResultSetSchema(),
+			paramHelper.newResultSetRecord()
+		);
 	}
 
 	public void setSunkPlan(SunkPlan p) {

@@ -25,7 +25,7 @@ public class NaiveStoredProcedureTask extends StoredProcedureTask {
 	private NaiveStoredProcedure<?> nsp;
 	
 	public NaiveStoredProcedureTask(int cid, int connId, long txNum,
-			DdStoredProcedure sp) {
+			DdStoredProcedure<?> sp) {
 		super(cid, connId, txNum, sp);
 		
 		nsp = (NaiveStoredProcedure<?>) sp;

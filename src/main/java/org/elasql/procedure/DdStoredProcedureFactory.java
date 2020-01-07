@@ -17,6 +17,6 @@ package org.elasql.procedure;
 
 public interface DdStoredProcedureFactory {
 
-	DdStoredProcedure getStoredProcedure(int pid, long txNum);
+	DdStoredProcedure<?> getStoredProcedure(int pid, long txNum);
 
 }

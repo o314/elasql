@@ -29,7 +29,6 @@ import org.vanilladb.core.sql.VarcharConstant;
 import org.vanilladb.core.storage.log.BasicLogRecord;
 import org.vanilladb.core.storage.log.LogSeqNum;
 import org.vanilladb.core.storage.tx.Transaction;
-import org.vanilladb.core.storage.tx.recovery.LogRecord;
 
 public class StoredProcRequestRecord implements DdLogRecord {
 	private long txNum;

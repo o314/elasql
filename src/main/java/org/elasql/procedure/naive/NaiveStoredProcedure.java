@@ -33,7 +33,7 @@ import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 import org.vanilladb.core.storage.tx.Transaction;
 
 public abstract class NaiveStoredProcedure<H extends StoredProcedureParamHelper>
-		implements DdStoredProcedure {
+		extends DdStoredProcedure<H> {
 
 	// Protected resource
 	protected Transaction tx;
@@ -47,11 +47,9 @@ public abstract class NaiveStoredProcedure<H extends StoredProcedureParamHelper>
 	private NaiveCacheMgr cacheMgr = (NaiveCacheMgr) Elasql.remoteRecReceiver();
 	
 	public NaiveStoredProcedure(long txNum, H paramHelper) {
+		super(paramHelper);
 		this.txNum = txNum;
 		this.paramHelper = paramHelper;
-
-		if (paramHelper == null)
-			throw new NullPointerException("paramHelper should not be null");
 	}
 
 	/*******************
@@ -99,6 +97,7 @@ public abstract class NaiveStoredProcedure<H extends StoredProcedureParamHelper>
 
 	@Override
 	public SpResultSet execute() {
+		boolean isCommitted = false;
 		
 		try {
 			// Get conservative locks it has asked before
@@ -109,14 +108,18 @@ public abstract class NaiveStoredProcedure<H extends StoredProcedureParamHelper>
 
 			// The transaction finishes normally
 			tx.commit();
+			isCommitted = true;
 
 		} catch (Exception e) {
 			tx.rollback();
-			paramHelper.setCommitted(false);
 			e.printStackTrace();
 		}
 
-		return paramHelper.createResultSet();
+		return new SpResultSet(
+			isCommitted,
+			paramHelper.getResultSetSchema(),
+			paramHelper.newResultSetRecord()
+		);
 	}
 	
 	@Override
@@ -141,7 +144,7 @@ public abstract class NaiveStoredProcedure<H extends StoredProcedureParamHelper>
 	}
 	
 	protected void insert(RecordKey key, Map<String, Constant> fldVals) {
-		cacheMgr.insert(key, new CachedRecord(fldVals), tx);
+		cacheMgr.insert(key, CachedRecord.newRecordForInsertion(key, fldVals), tx);
 	}
 	
 	protected void delete(RecordKey key) {

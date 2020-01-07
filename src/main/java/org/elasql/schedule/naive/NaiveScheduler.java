@@ -56,7 +56,7 @@ public class NaiveScheduler extends Task implements Scheduler {
 					continue;
 
 				// create store procedure and prepare
-				DdStoredProcedure sp = factory.getStoredProcedure(
+				DdStoredProcedure<?> sp = factory.getStoredProcedure(
 						call.getPid(), call.getTxNum());
 				sp.prepare(call.getPars());
 

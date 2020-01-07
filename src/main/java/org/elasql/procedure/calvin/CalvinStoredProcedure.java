@@ -38,7 +38,7 @@ import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 import org.vanilladb.core.storage.tx.Transaction;
 
 public abstract class CalvinStoredProcedure<H extends StoredProcedureParamHelper>
-		implements DdStoredProcedure {
+		extends DdStoredProcedure<H> {
 
 	// Protected resource
 	protected Transaction tx;
@@ -67,6 +67,8 @@ public abstract class CalvinStoredProcedure<H extends StoredProcedureParamHelper
 	private Set<RecordKey> remoteReadKeys = new HashSet<RecordKey>();
 
 	public CalvinStoredProcedure(long txNum, H paramHelper) {
+		super(paramHelper);
+		
 		this.txNum = txNum;
 		this.paramHelper = paramHelper;
 		this.localNodeId = Elasql.serverId();
@@ -145,6 +147,8 @@ public abstract class CalvinStoredProcedure<H extends StoredProcedureParamHelper
 
 	@Override
 	public SpResultSet execute() {
+		boolean isCommitted = false;
+		
 		try {
 			// Get conservative locks it has asked before
 			getConservativeLocks();
@@ -157,18 +161,21 @@ public abstract class CalvinStoredProcedure<H extends StoredProcedureParamHelper
 			
 			// The transaction finishes normally
 			tx.commit();
-			paramHelper.setCommitted(true);
+			isCommitted = true;
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 			tx.rollback();
-			paramHelper.setCommitted(false);
 		} finally {
 			// Clean the cache
 			cacheMgr.notifyTxCommitted();
 		}
 
-		return paramHelper.createResultSet();
+		return new SpResultSet(
+			isCommitted,
+			paramHelper.getResultSetSchema(),
+			paramHelper.newResultSetRecord()
+		);
 	}
 
 	public boolean isParticipated() {

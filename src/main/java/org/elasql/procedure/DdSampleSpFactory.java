@@ -18,7 +18,7 @@ package org.elasql.procedure;
 public class DdSampleSpFactory implements DdStoredProcedureFactory {
 
 	@Override
-	public DdStoredProcedure getStoredProcedure(int pid, long txNum) {
+	public DdStoredProcedure<?> getStoredProcedure(int pid, long txNum) {
 		throw new UnsupportedOperationException();
 	}
 

@@ -30,7 +30,7 @@ public class CalvinStoredProcedureTask extends StoredProcedureTask {
 
 	private CalvinStoredProcedure<?> csp;
 
-	public CalvinStoredProcedureTask(int cid, int connId, long txNum, DdStoredProcedure sp) {
+	public CalvinStoredProcedureTask(int cid, int connId, long txNum, DdStoredProcedure<?> sp) {
 		super(cid, connId, txNum, sp);
 
 		csp = (CalvinStoredProcedure<?>) sp;
