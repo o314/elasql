@@ -20,6 +20,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.Type;
@@ -28,7 +30,14 @@ import org.vanilladb.core.sql.predicate.Expression;
 import org.vanilladb.core.sql.predicate.FieldNameExpression;
 import org.vanilladb.core.sql.predicate.Predicate;
 import org.vanilladb.core.sql.predicate.Term;
+import org.vanilladb.core.storage.index.SearchKey;
 
+/**
+ * A RecordKey object is an immutable object representing a primary key.
+ * 
+ * @author SLMT
+ *
+ */
 public class RecordKey implements Serializable {
 
 	private static final long serialVersionUID = 20200107001L;
@@ -110,6 +119,20 @@ public class RecordKey implements Serializable {
 			pred.conjunctWith(new Term(k, Term.OP_EQ, v));
 		}
 		return pred;
+	}
+	
+	public SearchKey toSearchKey(List<String> indexedFields) {
+		Constant[] vals = new Constant[indexedFields.size()];
+		Iterator<String> fldNameIter = indexedFields.iterator();
+
+		for (int i = 0; i < vals.length; i++) {
+			String fldName = fldNameIter.next();
+			vals[i] = getVal(fldName);
+			if (vals[i] == null)
+				throw new NullPointerException("there is no value for '" + fldName + "'");
+		}
+		
+		return new SearchKey(vals);
 	}
 	
 //	@Override
