@@ -97,16 +97,19 @@ public class ConservativeOrderedCcMgr extends ConcurrencyMgr {
 				lockTbl.sLock(obj, txNum);
 	}
 
+	@Override
 	public void onTxCommit(Transaction tx) {
 		releaseLocks();
 	}
 
+	@Override
 	public void onTxRollback(Transaction tx) {
 		releaseLocks();
 	}
 
+	@Override
 	public void onTxEndStatement(Transaction tx) {
-		// do nothing
+		releaseIndexLocks();
 	}
 
 	@Override
@@ -154,6 +157,7 @@ public class ConservativeOrderedCcMgr extends ConcurrencyMgr {
 	 * @param blk
 	 *            the block id
 	 */
+	@Override
 	public void modifyLeafBlock(BlockId blk) {
 		lockTbl.xLock(blk, txNum);
 		writtenIndexBlks.add(blk);
@@ -165,6 +169,7 @@ public class ConservativeOrderedCcMgr extends ConcurrencyMgr {
 	 * @param blk
 	 *            the block id
 	 */
+	@Override
 	public void readLeafBlock(BlockId blk) {
 		lockTbl.sLock(blk, txNum);
 		readIndexBlks.add(blk);
@@ -177,6 +182,7 @@ public class ConservativeOrderedCcMgr extends ConcurrencyMgr {
 	 * @param blk
 	 *            the block id
 	 */
+	@Override
 	public void crabDownDirBlockForModification(BlockId blk) {
 		lockTbl.xLock(blk, txNum);
 		writtenIndexBlks.add(blk);
@@ -188,6 +194,7 @@ public class ConservativeOrderedCcMgr extends ConcurrencyMgr {
 	 * @param blk
 	 *            the block id
 	 */
+	@Override
 	public void crabDownDirBlockForRead(BlockId blk) {
 		lockTbl.sLock(blk, txNum);
 		readIndexBlks.add(blk);
@@ -199,6 +206,7 @@ public class ConservativeOrderedCcMgr extends ConcurrencyMgr {
 	 * @param blk
 	 *            the block id
 	 */
+	@Override
 	public void crabBackDirBlockForModification(BlockId blk) {
 		lockTbl.release(blk, txNum, ConservativeOrderedLockTable.LockType.X_LOCK);
 		writtenIndexBlks.remove(blk);
@@ -210,24 +218,18 @@ public class ConservativeOrderedCcMgr extends ConcurrencyMgr {
 	 * @param blk
 	 *            the block id
 	 */
+	@Override
 	public void crabBackDirBlockForRead(BlockId blk) {
 		lockTbl.release(blk, txNum, ConservativeOrderedLockTable.LockType.S_LOCK);
 		readIndexBlks.remove(blk);
 	}
 
-	public void releaseIndexLocks() {
-		for (BlockId blk : readIndexBlks)
-			lockTbl.release(blk, txNum, ConservativeOrderedLockTable.LockType.S_LOCK);
-		for (BlockId blk : writtenIndexBlks)
-			lockTbl.release(blk, txNum, ConservativeOrderedLockTable.LockType.X_LOCK);
-		readIndexBlks.clear();
-		writtenIndexBlks.clear();
-	}
-
+	@Override
 	public void lockRecordFileHeader(BlockId blk) {
 		lockTbl.xLock(blk, txNum);
 	}
 
+	@Override
 	public void releaseRecordFileHeader(BlockId blk) {
 		lockTbl.release(blk, txNum, ConservativeOrderedLockTable.LockType.X_LOCK);
 	}
@@ -240,6 +242,15 @@ public class ConservativeOrderedCcMgr extends ConcurrencyMgr {
 	@Override
 	public void readRecord(RecordId recId) {
 		// do nothing
+	}
+
+	private void releaseIndexLocks() {
+		for (BlockId blk : readIndexBlks)
+			lockTbl.release(blk, txNum, ConservativeOrderedLockTable.LockType.S_LOCK);
+		for (BlockId blk : writtenIndexBlks)
+			lockTbl.release(blk, txNum, ConservativeOrderedLockTable.LockType.X_LOCK);
+		readIndexBlks.clear();
+		writtenIndexBlks.clear();
 	}
 	
 	private void releaseLocks() {

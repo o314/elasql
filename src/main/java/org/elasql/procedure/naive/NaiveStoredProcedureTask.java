@@ -32,6 +32,8 @@ public class NaiveStoredProcedureTask extends StoredProcedureTask {
 	}
 
 	public void run() {
+		Thread.currentThread().setName("Tx." + txNum);
+		
 		SpResultSet rs = sp.execute();
 		Elasql.connectionMgr().sendClientResponse(clientId, connectionId, txNum, rs);
 	}

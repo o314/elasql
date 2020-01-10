@@ -23,16 +23,23 @@ import org.elasql.sql.CachedRecord;
 import org.elasql.sql.RecordKey;
 
 public class TupleSet implements Serializable {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3191495851408477607L;
+	private static final long serialVersionUID = 20200109001L;
+	
 	private List<Tuple> tuples;
 	private int sinkId;
+	private Serializable metadata;
 
 	public TupleSet(int sinkId) {
 		this.tuples = new ArrayList<Tuple>();
 		this.sinkId = sinkId;
+	}
+	
+	public void setMetadata(Serializable data){
+		metadata = data;
+	}
+	
+	public Serializable getMetadata(){
+		return metadata;
 	}
 
 	public List<Tuple> getTupleSet() {
@@ -46,5 +53,9 @@ public class TupleSet implements Serializable {
 
 	public int sinkId() {
 		return sinkId;
+	}
+	
+	public int size() {
+		return tuples.size();
 	}
 }

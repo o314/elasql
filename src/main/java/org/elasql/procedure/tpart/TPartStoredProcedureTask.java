@@ -40,6 +40,8 @@ public class TPartStoredProcedureTask extends StoredProcedureTask {
 
 	@Override
 	public void run() {
+		Thread.currentThread().setName("Tx." + txNum);
+		
 //		Timers.createTimer(txNum);
 		SpResultSet rs = null;
 //		Timers.getTimer().startExecution();

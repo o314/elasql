@@ -96,6 +96,11 @@ public class ConnectionMgr
 		serverAppl.sendTotalOrderRequest(spcs);
 	}
 
+	public void callStoredProcInAppiaThread(int pid, Object... pars) {
+		StoredProcedureCall[] spcs = { new StoredProcedureCall(myId, pid, pars) };
+		serverAppl.sendTotalOrderRequest(spcs, true);
+	}
+
 	public void pushTupleSet(int nodeId, TupleSet reading) {
 		P2pMessage p2pmsg = new P2pMessage(reading, nodeId, ChannelType.SERVER);
 		serverAppl.sendP2pMessage(p2pmsg);
